@@ -1,0 +1,7 @@
+{
+    "interval": 3,
+    "tilt_base_url": "http://localhost:10350",
+    "tilt_file_path": "",
+    "tilt_context": "docker-desktop",
+    "tilt_cmd_args": ""
+}

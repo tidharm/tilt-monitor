@@ -1,0 +1,26 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+
+# Build directories
+package/
+build/
+dist/
+spec/
+*.egg-info/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Icon build directory
+tilt_monitor/resources/tilt.iconset/
+*.icns
+
+# Logs
+*.log
+.DS_Store

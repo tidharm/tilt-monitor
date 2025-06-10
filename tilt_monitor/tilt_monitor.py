@@ -6,9 +6,9 @@ import os
 from pathlib import Path
 import rumps
 import requests
+import shutil
 import subprocess
 import sys
-import time
 import traceback
 import webbrowser
 
@@ -16,6 +16,7 @@ import Foundation
 
 
 bundle = Foundation.NSBundle.mainBundle()
+bundle_path = bundle.bundlePath()
 info = bundle.infoDictionary() or {}
 APP_NAME = info.get('CFBundleDisplayName', 'Tilt Monitor')
 APP_VERSION = info.get('CFBundleShortVersionString', 'dev')
@@ -276,6 +277,37 @@ def is_tiltfile_path_valid(path_str):
     return path.is_file() and path.name == 'Tiltfile'
 
 
+def is_app_location_valid():
+    if bundle_path.startswith('/Applications/') or not os.access(bundle_path, os.W_OK):
+        return True
+    return False
+
+
+def move_to_applications():
+    """Move the app bundle to the Applications folder. NOTE: Must be run only after TiltMonitorApp was initialized to use rump commands"""
+    app_name = os.path.basename(bundle_path)
+    destination_path = os.path.join('/Applications', app_name)
+    dest_exists = os.path.exists(destination_path)
+
+    alert_msg = (f'To keep your applications organized, it is recommended to move {APP_NAME} to your Applications folder.\n\n'
+                 f'Would you like to move it now{" (overwrite the existing version)" if dest_exists else ""} and relaunch?')
+    response = rumps.alert(title=f'Move {APP_NAME}?', message=alert_msg, ok='Move to Applications', cancel="Don't Move")
+    if response == 1:  # OK button
+        try:
+            if dest_exists:
+                log(f'Removing existing destination: {destination_path}')
+                shutil.rmtree(destination_path)
+            log(f'Moving {bundle_path} to {destination_path}')
+            shutil.move(bundle_path, destination_path)
+            log('Relaunching from new location')
+            subprocess.Popen(['open', destination_path])
+            rumps.quit_application()
+        except Exception as mv_err:
+            log(f'Failed to move application: {mv_err}', 'ERROR', mv_err)
+            alert_msg = f'Could not move {APP_NAME} to the Applications folder.\n\nPlease do it manually.'
+            rumps.alert(title='Move Failed', message=alert_msg, ok='OK')
+
+
 def run_tilt_command(command):
     """Run a tilt command (up/down) with configured arguments"""
     try:
@@ -380,6 +412,9 @@ class TiltMonitorApp(rumps.App):
         self.init_timer.start()
 
     def initialize(self, _):
+        if not is_app_location_valid():
+            move_to_applications()
+
         is_tilt_running()
         self.update_menu_visibility()
         if app.tilt_running:

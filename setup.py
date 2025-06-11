@@ -21,9 +21,7 @@ setup(
     python_requires='>=3.9',
     install_requires=[line.strip() for line in open('requirements.txt').readlines()],
     extras_require={
-        'dev': [
-            'py2app~=0.28.8',
-        ]
+        'dev': [line.strip() for line in open('requirements-dev.txt').readlines()],
     },
     package_data={
         'tilt_monitor': ['resources/*.png', 'resources/*.icns', 'tilt_monitor_config.json'],

@@ -18,6 +18,7 @@ ICNS_PATH = os.path.join(RESOURCE_DIR, ICNS_NAME)
 PKG_DIR = 'package'
 DIST_DIR = 'dist'
 BUILD_DIR = 'build'
+VENV_DIR = '.venv'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
@@ -50,6 +51,41 @@ file_handler.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
+def setup_environment():
+    """
+    Sets up a virtual environment and installs dependencies.
+    Returns the path to the Python executable in the virtual environment.
+    """
+    venv_dir = os.environ.get('VIRTUAL_ENV')
+    if venv_dir:
+        logger.info(f"Using existing virtual environment: '{venv_dir}'")
+    else:
+        for item in os.listdir('.'):
+            if os.path.isdir(item) and os.path.exists(os.path.join(item, 'pyvenv.cfg')):
+                venv_dir = item  # found an existing, inactive venv
+                logger.info(f"Using existing virtual environment: '{venv_dir}'")
+                break
+
+    if venv_dir is None:
+        venv_dir = VENV_DIR
+        logger.info(f"Creating virtual environment: '{venv_dir}'")
+        subprocess.check_call([sys.executable, '-m', 'venv', venv_dir])
+
+    python = os.path.join(venv_dir, 'bin', 'python')
+    
+    logger.info('Installing dependencies...')
+    subprocess.check_output(
+        [python, '-m', 'pip', 'install', '-r', 'requirements.txt', '--upgrade']
+    )
+    
+    logger.info('Installing dev dependencies...')
+    subprocess.check_output(
+        [python, '-m', 'pip', 'install', '-r', 'requirements-dev.txt', '--upgrade']
+    )
+
+    return python
+
+
 def create_icon():
     """Create .icns file from .png using sips and iconutil."""
     if os.path.exists(ICNS_PATH):
@@ -75,13 +111,13 @@ def create_icon():
             'icon_512x512.png': 512,
         }
         for name, size in sizes.items():
-            subprocess.run([
+            subprocess.check_output([
                 'sips', '-z', str(size), str(size), source_image, '--out', os.path.join(iconset_dir, name)
-            ], check=True, capture_output=True)
+            ])
         shutil.copy(source_image, os.path.join(iconset_dir, 'icon_512x512@2x.png'))
 
         # Create .icns from iconset
-        subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', ICNS_PATH], check=True, capture_output=True)
+        subprocess.check_output(['iconutil', '-c', 'icns', iconset_dir, '-o', ICNS_PATH])
         logger.info(f'Icon created at "{ICNS_PATH}"')
 
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
@@ -116,7 +152,7 @@ def quit_app():
             if 'Quit' in prompt_result.stdout:
                 logger.info('Quitting application...')
                 quit_script = f'tell application "{APP_NAME}" to quit'
-                subprocess.run(['osascript', '-e', quit_script], check=True)
+                subprocess.check_call(['osascript', '-e', quit_script])
                 time.sleep(2)  # Give the app time to quit.
             else:
                 logger.info('Build cancelled')
@@ -130,7 +166,7 @@ def quit_app():
         sys.exit(1)
 
 
-def build():
+def build(python_executable):
     """Build the macOS application."""
     create_icon()
 
@@ -143,7 +179,7 @@ def build():
     logger.info(f'Packaging {APP_NAME} using py2app (see log for details)')
     try:
         subprocess.run(
-            [sys.executable, 'setup.py', 'py2app'],
+            [python_executable, 'setup.py', 'py2app'],
             stdout=file_handler.stream,
             stderr=subprocess.PIPE,
             text=True,
@@ -173,6 +209,10 @@ def build():
 
 if __name__ == '__main__':
     try:
-        build()
+        python_exe = setup_environment()
+        build(python_exe)
     except KeyboardInterrupt:
         pass
+    except Exception as build_err:
+        logger.error(f"A build step failed. Check 'build.log' for details.")
+        sys.exit(1)

@@ -16,23 +16,12 @@ Tilt Monitor is a macOS menu bar application that provides real-time status moni
    cd tilt-monitor
    ```
 
-2. Create and activate a virtual environment:
-   ```
-   python -m venv .venv
-   source .venv/bin/activate
-   ```
-
-3. Install the package in development mode:
-   ```
-   pip install -e .
-   ```
-
-4. Run the build script:
+2. Run the build script:
    ```
    python build.py
    ```
 
-   The packaged application will be available in the `package/Tilt Monitor.app` directory (it is recomended to move it to the `/Applications` directory).
+   The packaged application will be available in the `package/Tilt Monitor.app` directory (it is recommended to move it to the `/Applications` directory).
 
 ## Usage
 

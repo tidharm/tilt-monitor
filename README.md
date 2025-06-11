@@ -21,35 +21,69 @@ Tilt Monitor is a macOS menu bar application that provides real-time status moni
    python build.py
    ```
 
-   The packaged application will be available in the `package/Tilt Monitor.app` directory (it is recommended to move it to the `/Applications` directory).
+   When the build finishes, the packaged application will be available in the `package/Tilt Monitor.app` directory.  
+   It is recommended to move it to the `/Applications` directory.
 
 ## Usage
 
-- The menu bar icon shows the current status of Tilt:
-  - **Green**: All resources are healthy.
-  - **Red**: One or more resources have errors.
-  - **Gray**: Tilt is starting or in a pending state.
-  - **Transparent**: Tilt is not running.
+1. Start the application by launching it from Finder or Spotlight:  
 
-- Click on the icon to access the menu:
-  - **Tilt Up / Tilt Down**: Start or stop the Tilt daemon.
-  - **Open Tilt UI**: Open the Tilt web interface in your default browser.
-  - **Edit Configuration**: Open the configuration file in your default editor.
-  - **Reload**: Reload the application to apply configuration changes.
-  - **Show Log**: Open the application's log file.
-  - **About**: Display the application's version and description.
+    <img src="tilt_monitor/resources/readme/app-finder.png" alt="Finder" height="100" style="vertical-align:middle;">
+    <img src="tilt_monitor/resources/readme/app-spotlight.png" alt="Spotlight" height="100" style="vertical-align:middle;">
+    <br/>
+
+    **First time only:**  
+    Click on **Edit Configuration** to specify the path to the main Tiltfile ([config](#configuration) param `tilt_base_url`).  
+    Make sure to click **Reload** after modifying the configuration file.  
+
+    <img src="tilt_monitor/resources/readme/menubar-config.png" alt="Edit Configuration" height="120" style="vertical-align:middle;">
+    <img src="tilt_monitor/resources/readme/menubar-config-reload.png" alt="Reload Configuration" height="120" style="vertical-align:middle;">
+    <br/>
+    
+    > If the **Tilt Up** menu option remains grayed out after reload, it means the specified path is incorrect/invalid.  
+    
+
+2. Click on **Tilt Up**
+
+    The menu bar icon shows the current status of Tilt:
+
+    |                                                                                                                 |                                        |
+    |-----------------------------------------------------------------------------------------------------------------|----------------------------------------|
+    | <img alt="Transparent" src="tilt_monitor/resources/transparent.png" height="18" style="vertical-align:middle;"> | Tilt is not running                    |
+    | <img alt="Green" src="tilt_monitor/resources/green.png" height="18" style="vertical-align:middle;">             | All resources are healthy              |
+    | <img alt="Gray" src="tilt_monitor/resources/gray.png" height="18" style="vertical-align:middle;">               | Tilt is starting or in a pending state |
+    | <img alt="Red" src="tilt_monitor/resources/red.png" height="18" style="vertical-align:middle;">                 | One or more resources have errors      |
+    
+
+### Menu Options:  
+
+|                         |                                                       |
+|-------------------------|-------------------------------------------------------|
+| **Tilt Up / Tilt Down** | Start or stop the Tilt daemon                         |
+| **Open Tilt UI**        | Open the Tilt web interface in your default browser   |
+| **Edit Configuration**  | Open the configuration file in your default editor    |
+| **Reload**              | Reload the application to apply configuration changes |
+| **Show Log**            | Open the application's log file                       |
+| **About Tilt Monitor**  | Display the application's version and description     |
+| **Quit**                | Stop the Tilt daemon and quit the application         |
+
+  
 
 ## Configuration
 
-The configuration file is stored at `~/Library/Application Support/TiltMonitor/tilt_monitor_config.json` regardless of whether the app is run from source or as a packaged `.app` bundle.
+The configuration file is stored at `~/Library/Application Support/TiltMonitor/tilt_monitor_config.json`.
 
 Configuration options:
-- `keepalive_interval`: Time interval in seconds for status checks when Tilt is running.
-- `sleep_interval`: Time interval in seconds for status checks when Tilt is down.
-- `tilt_base_url`: URL for the Tilt API.
-- `tilt_file_path`: **(Required)** Path to your `Tiltfile` or the directory that contains it.
-- `tilt_context`: Kubernetes context to use with Tilt.
-- `tilt_cmd_args`: Additional command-line arguments for the `tilt up` command.
+
+| Parameter            | Default                  | Description                                                                                          |
+|----------------------|--------------------------|------------------------------------------------------------------------------------------------------|
+| `keepalive_interval` | 3                        | Time interval in seconds for status checks when Tilt is running                                      |
+| `sleep_interval`     | 30                       | Time interval in seconds for status checks when Tilt is down                                         |
+| `tilt_base_url`      | `http://localhost:10350` | URL for the Tilt API                                                                                 |
+| `tilt_file_path`     | `-`                      | Path to your `Tiltfile` or the directory that contains it<br/>**Must be specified before first use** |
+| `tilt_context`       | `docker-desktop`         | Kubernetes context to use with Tilt                                                                  |
+| `tilt_cmd_args`      | `-`                      | Additional command-line arguments for the `tilt up` command                                          |
+
 
 ## License
 

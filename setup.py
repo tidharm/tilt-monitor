@@ -37,7 +37,7 @@ setup(
     options={
         'py2app': {
             'iconfile': 'tilt_monitor/resources/tilt.icns',
-            'includes': ['rumps', 'pyobjc_framework_Cocoa'],
+            'includes': ['rumps', 'pyobjc_framework_Cocoa', 'imp'],
             'plist': {
                 'CFBundleIdentifier': 'com.tilt.monitor',
                 'CFBundleDisplayName': __app_name__,

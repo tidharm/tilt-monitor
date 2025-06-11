@@ -166,8 +166,9 @@ def quit_app():
         sys.exit(1)
 
 
-def build(python_executable):
+def build(python_executable=None):
     """Build the macOS application."""
+    python = python_executable or sys.executable
     create_icon()
 
     quit_app()
@@ -179,7 +180,7 @@ def build(python_executable):
     logger.info(f'Packaging {APP_NAME} using py2app (see log for details)')
     try:
         subprocess.run(
-            [python_executable, 'setup.py', 'py2app'],
+            [python, 'setup.py', 'py2app'],
             stdout=file_handler.stream,
             stderr=subprocess.PIPE,
             text=True,

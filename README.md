@@ -2,7 +2,9 @@
 
 <img src="tilt_monitor/resources/readme/menubar-main.png" alt="Tilt Monitor" height="30" style="vertical-align:middle;"><br/>
 
-Tilt Monitor is a macOS menu bar application that provides real-time status monitoring for [Tilt](https://tilt.dev/). It replicates Tilt's favicon status colors, allows you basic control over Tilt's status (start/stop), and to quickly access the Tilt dashboard to view your resources' status.
+Tilt Monitor is a macOS menu bar application that provides real-time status monitoring for [Tilt](https://tilt.dev/).  
+
+It replicates Tilt's favicon status colors, and allows you basic control over Tilt's status (start/stop), as well as quick access to the Tilt dashboard to view your resources.
 
 ## Features
 
@@ -77,14 +79,14 @@ The configuration file is stored at `~/Library/Application Support/TiltMonitor/t
 
 Configuration options:
 
-| Parameter            | Default                  | Description                                                                                          |
-|----------------------|--------------------------|------------------------------------------------------------------------------------------------------|
-| `keepalive_interval` | 3                        | Time interval in seconds for status checks when Tilt is running                                      |
-| `sleep_interval`     | 30                       | Time interval in seconds for status checks when Tilt is down                                         |
-| `tilt_base_url`      | `http://localhost:10350` | URL for the Tilt API                                                                                 |
-| `tilt_file_path`     | `-`                      | Path to your `Tiltfile` or the directory that contains it<br/>**Must be specified before first use** |
-| `tilt_context`       | `docker-desktop`         | Kubernetes context to use with Tilt                                                                  |
-| `tilt_cmd_args`      | `-`                      | Additional command-line arguments for the `tilt up` command                                          |
+| Parameter                                        | Default                  | Description                                                                                          |
+|--------------------------------------------------|--------------------------|------------------------------------------------------------------------------------------------------|
+| `keepalive_interval`                             | 3                        | Time interval in seconds for status checks when Tilt is running                                      |
+| `sleep_interval`                                 | 30                       | Time interval in seconds for status checks when Tilt is down                                         |
+| `tilt_base_url`                                  | `http://localhost:10350` | URL for the Tilt API                                                                                 |
+| `tilt_file_path`<span style="color:red">*</span> | `-`                      | Path to your `Tiltfile` or the directory that contains it<br/>**Must be specified before first use** |
+| `tilt_context`                                   | `docker-desktop`         | Kubernetes context to use with Tilt                                                                  |
+| `tilt_cmd_args`                                  | `-`                      | Additional command-line arguments for the `tilt up` command, if needed                               |
 
 
 ## License

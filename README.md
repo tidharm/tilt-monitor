@@ -1,5 +1,7 @@
 # Tilt Monitor
 
+<img src="tilt_monitor/resources/readme/menubar-main.png" alt="Tilt Monitor" height="30" style="vertical-align:middle;"><br/>
+
 Tilt Monitor is a macOS menu bar application that provides real-time status monitoring for [Tilt](https://tilt.dev/). It replicates Tilt's favicon status colors, allows you basic control over Tilt's status (start/stop), and to quickly access the Tilt dashboard to view your resources' status.
 
 ## Features
@@ -50,9 +52,9 @@ Tilt Monitor is a macOS menu bar application that provides real-time status moni
     |                                                                                                                 |                                        |
     |-----------------------------------------------------------------------------------------------------------------|----------------------------------------|
     | <img alt="Transparent" src="tilt_monitor/resources/transparent.png" height="18" style="vertical-align:middle;"> | Tilt is not running                    |
-    | <img alt="Green" src="tilt_monitor/resources/green.png" height="18" style="vertical-align:middle;">             | All resources are healthy              |
-    | <img alt="Gray" src="tilt_monitor/resources/gray.png" height="18" style="vertical-align:middle;">               | Tilt is starting or in a pending state |
+    | <img alt="Gray" src="tilt_monitor/resources/gray.png" height="18" style="vertical-align:middle;">               | Tilt is starting or in a pending state |    
     | <img alt="Red" src="tilt_monitor/resources/red.png" height="18" style="vertical-align:middle;">                 | One or more resources have errors      |
+    | <img alt="Green" src="tilt_monitor/resources/green.png" height="18" style="vertical-align:middle;">             | All resources are healthy              |
     
 
 ### Menu Options:  

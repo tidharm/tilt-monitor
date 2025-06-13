@@ -28,11 +28,11 @@ SHELL = os.environ.get('SHELL', '/bin/zsh')
 
 # Config defaults
 DEFAULT_CONFIG = {
+    'tilt_file_path': '',  # supports both file path and parent dir (with or without '/Tiltfile')
+    'tilt_base_url': 'http://localhost:10350',
+    'tilt_context': 'docker-desktop',
     'keepalive_interval': 3,  # Interval for tilt status checks
     'sleep_interval': 30,  # Interval for status checks when tilt is down
-    'tilt_base_url': 'http://localhost:10350',
-    'tilt_file_path': '',  # supports both file path and parent dir (with or without '/Tiltfile')
-    'tilt_context': 'docker-desktop',
     'tilt_cmd_args': ''  # For any other args other than -f and --context
 }
 

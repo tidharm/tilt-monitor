@@ -1,3 +1,6 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Python](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+
 # Tilt Monitor
 
 <img src="tilt_monitor/resources/readme/menubar-main.png" alt="Tilt Monitor" height="30" style="vertical-align:middle;"><br/>

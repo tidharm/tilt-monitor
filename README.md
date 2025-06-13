@@ -67,15 +67,13 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 | **Open Tilt UI**        | Open the Tilt web interface in your default browser   |
 | **Edit Configuration**  | Open the configuration file in your default editor    |
 | **Reload**              | Reload the application to apply configuration changes |
-| **Show Log**            | Open the application's log file                       |
+| **Show Log** \*         | Open the application's log file                       |
 | **About Tilt Monitor**  | Display the application's version and description     |
 | **Quit**                | Stop the Tilt daemon and quit the application         |
 
-  
+> \* Log files are located under `~/Library/Logs/TiltMonitor`  
 
 ## Configuration
-
-The configuration file is stored at `~/Library/Application Support/TiltMonitor/tilt_monitor_config.json`.
 
 Configuration options:
 
@@ -88,10 +86,13 @@ Configuration options:
 | `tilt_context`                                   | `docker-desktop`         | Kubernetes context to use with Tilt                                                                  |
 | `tilt_cmd_args`                                  | `-`                      | Additional command-line arguments for the `tilt up` command, if needed                               |
 
+> \* The configuration file is located at `~/Library/Application Support/TiltMonitor/tilt_monitor_config.json`.
+
 
 ## License
 
 See the [LICENSE](LICENSE) file for details.
+
 
 ## Disclaimer
 

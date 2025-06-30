@@ -33,7 +33,8 @@ DEFAULT_CONFIG = {
     'tilt_context': 'docker-desktop',
     'keepalive_interval': 3,  # Interval for tilt status checks
     'sleep_interval': 30,  # Interval for status checks when tilt is down
-    'tilt_cmd_args': ''  # For any other args other than -f and --context
+    'tilt_cmd_args': '',  # For any other args other than -f and --context
+    'env_vars': {}
 }
 
 # Paths
@@ -85,6 +86,7 @@ def load_config():
         for key, value in DEFAULT_CONFIG.items():
             if key not in cfg:
                 cfg[key] = value
+                log(f'Key "{key}" not found in config file; Using default value: {value}', 'WARN')
 
         return cfg
     except Exception as load_err:
@@ -99,6 +101,7 @@ tilt_base_url = config['tilt_base_url']
 tilt_file_path = config['tilt_file_path']
 tilt_context = config['tilt_context']
 tilt_cmd_args = config['tilt_cmd_args']
+custom_env_vars = config['env_vars']
 
 # Variables
 if tilt_file_path.endswith('Tiltfile'):
@@ -173,6 +176,10 @@ def get_terminal_environ():
     env_output = subprocess.check_output([SHELL, '-l', '-c', 'env'], text=True, env=base_env).strip()
     # log('[DEBUG] Terminal env:\n' + "\n".join(f"\t{p}" for p in env_output.splitlines()))
     terminal_env = dict(line.split('=', 1) for line in env_output.splitlines() if '=' in line)
+    if custom_env_vars:
+        log(f'Updating custom environment variables:\n' + "\n".join(f"\t{k}={v}" for k, v in custom_env_vars.items()))
+        for k, v in custom_env_vars.items():
+            terminal_env[k] = v
     return terminal_env
 
 
@@ -187,6 +194,12 @@ def update_environ():
         log(f'Updated PATH environment variable from {SHELL} shell')
     except Exception as e:
         log(f'Error updating PATH environment variable: {e}', 'ERROR', e)
+
+
+def rumps_alert(title, message, ok='OK', other=None, cancel=None, callback=None):
+    if not hasattr(sys, 'frozen') and not sys.argv[0].endswith('.app/Contents/MacOS/'):
+        return 0
+    return rumps.alert(title, message, ok, other, cancel, callback)
 
 
 def api_get_tilt_status(timeout=None):
@@ -291,7 +304,7 @@ def move_to_applications():
 
     alert_msg = (f'To keep your applications organized, it is recommended to move {APP_NAME} to your Applications folder.\n\n'
                  f'Would you like to move it now{" (overwrite the existing version)" if dest_exists else ""} and relaunch?')
-    response = rumps.alert(title=f'Move {APP_NAME}?', message=alert_msg, ok='Move to Applications', cancel="Don't Move")
+    response = rumps_alert(title=f'Move {APP_NAME}?', message=alert_msg, ok='Move to Applications', cancel="Don't Move")
     if response == 1:  # OK button
         try:
             if dest_exists:
@@ -305,7 +318,7 @@ def move_to_applications():
         except Exception as mv_err:
             log(f'Failed to move application: {mv_err}', 'ERROR', mv_err)
             alert_msg = f'Could not move {APP_NAME} to the Applications folder.\n\nPlease do it manually.'
-            rumps.alert(title='Move Failed', message=alert_msg, ok='OK')
+            rumps_alert(title='Move Failed', message=alert_msg, ok='OK')
 
 
 def run_tilt_command(command):
@@ -313,7 +326,7 @@ def run_tilt_command(command):
     try:
         cmd_env = os.environ.copy()
         cmd = [app.tilt, command]
-        if command == 'up':
+        if command == 'up': # ToDo - Add --host and --port to all commands, to support multiple Tilt instances
             cmd.extend(tilt_cmd_args.split())
             try:
                 cmd_env = get_terminal_environ()
@@ -489,13 +502,13 @@ class TiltMonitorApp(rumps.App):
             rumps_notification('Edit Configuration', "Click 'Reload' from the app menu when done to apply changes")
         except Exception as edit_err:
             log(f'Error opening config file: {edit_err}', 'ERROR', edit_err)
-            rumps.alert('Error', f'Could not open configuration file: {edit_err}')
+            rumps_alert('Error', f'Could not open configuration file: {edit_err}')
 
     def about(self, _):
         """Show the About window"""
         log('Showing About message window')
         about_msg = f'Version {APP_VERSION}\n\n{APP_DESCRIPTION}'
-        clicked = rumps.alert(
+        clicked = rumps_alert(
             title=APP_NAME,
             message=about_msg,
             ok='Close',
@@ -518,7 +531,7 @@ class TiltMonitorApp(rumps.App):
             subprocess.call(['open', log_file])
         except Exception as show_err:
             log(f'Error opening log file: {show_err}', 'ERROR', show_err)
-            rumps.alert('Error', f'Could not open log file: {show_err}. Please check the log file manually ({log_file}).')
+            rumps_alert('Error', f'Could not open log file: {show_err}. Please check the log file manually ({log_file}).')
 
     @rumps.clicked(MENU_OPT_OPEN_UI)
     def open_ui(self, _):

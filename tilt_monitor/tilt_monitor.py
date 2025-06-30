@@ -101,7 +101,7 @@ tilt_base_url = config['tilt_base_url']
 tilt_file_path = config['tilt_file_path']
 tilt_context = config['tilt_context']
 tilt_cmd_args = config['tilt_cmd_args']
-tilt_env_vars = config['env_vars']
+custom_env_vars = config['env_vars']
 
 # Variables
 if tilt_file_path.endswith('Tiltfile'):
@@ -176,8 +176,9 @@ def get_terminal_environ():
     env_output = subprocess.check_output([SHELL, '-l', '-c', 'env'], text=True, env=base_env).strip()
     # log('[DEBUG] Terminal env:\n' + "\n".join(f"\t{p}" for p in env_output.splitlines()))
     terminal_env = dict(line.split('=', 1) for line in env_output.splitlines() if '=' in line)
-    if tilt_env_vars:
-        for k, v in tilt_env_vars.items():
+    if custom_env_vars:
+        log(f'Updating custom environment variables:\n' + "\n".join(f"\t{k}={v}" for k, v in custom_env_vars.items()))
+        for k, v in custom_env_vars.items():
             terminal_env[k] = v
     return terminal_env
 

@@ -80,14 +80,15 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 
 Configuration options:
 
-| Parameter            | Default                  | Description                                                                                          |
-|----------------------|--------------------------|------------------------------------------------------------------------------------------------------|
-| `tilt_file_path`*    | `-`                      | Path to your `Tiltfile` or the directory that contains it<br/>**Must be specified before first use** |
-| `tilt_base_url`      | `http://localhost:10350` | URL for the Tilt API                                                                                 |
-| `tilt_context`       | `docker-desktop`         | Kubernetes context to use with Tilt                                                                  |
-| `keepalive_interval` | 3                        | Time interval in seconds for status checks when Tilt is running                                      |
-| `sleep_interval`     | 30                       | Time interval in seconds for status checks when Tilt is down                                         |
-| `tilt_cmd_args`      | `-`                      | Additional command-line arguments for the `tilt up` command, if needed                               |
+| Parameter            | Default                  | Description                                                                                                          |
+|----------------------|--------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `tilt_file_path`*    | `-`                      | Path to your `Tiltfile` or the directory that contains it<br/>**Must be specified before first use**                 |
+| `tilt_base_url`      | `http://localhost:10350` | URL for the Tilt API                                                                                                 |
+| `tilt_context`       | `docker-desktop`         | Kubernetes context to use with Tilt                                                                                  |
+| `keepalive_interval` | 3                        | Time interval in seconds for status checks when Tilt is running                                                      |
+| `sleep_interval`     | 30                       | Time interval in seconds for status checks when Tilt is down                                                         |
+| `tilt_cmd_args`      | `-`                      | Additional command-line arguments for the `tilt up` command, if needed                                               |
+| `env_vars`           | `{}`                     | An object that allows specifying requirement environment variables that are missing in the app's vanilla environment |
 
 > \* The configuration file is located at `~/Library/Application Support/TiltMonitor/tilt_monitor_config.json`.
 

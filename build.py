@@ -19,9 +19,11 @@ PKG_DIR = 'package'
 DIST_DIR = 'dist'
 BUILD_DIR = 'build'
 VENV_DIR = '.venv'
+DMG_NAME = f'{APP_NAME}.dmg'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
+parser.add_argument('--dmg', action='store_true', help='Create a distributable DMG file.')
 args = parser.parse_args()
 
 # Configure logging
@@ -130,11 +132,14 @@ def create_icon():
             shutil.rmtree(iconset_dir)
 
 
+def is_app_running():
+    """Check if the application is running."""
+    return subprocess.run(['pgrep', '-x', APP_NAME], capture_output=True).returncode == 0
+
+
 def quit_app():
     try:
-        is_running_check = subprocess.run(['pgrep', '-x', APP_NAME], capture_output=True)
-        logger.debug(is_running_check)
-        if is_running_check.returncode == 0:
+        if is_app_running():
             logger.info(f'{APP_NAME} is running')
 
             dialog_text = f'{APP_NAME} is running." & return & return & "Quit it to continue the build, or Cancel to abort.'
@@ -154,7 +159,7 @@ def quit_app():
                 quit_script = f'tell application "{APP_NAME}" to quit'
                 subprocess.check_call(['osascript', '-e', quit_script])
                 for _ in range(10):
-                    if subprocess.run(['pgrep', '-x', APP_NAME], capture_output=True).returncode != 0:
+                    if not is_app_running():
                         logger.info(f'{APP_NAME} has quit.')
                         break
                     time.sleep(0.5)
@@ -170,6 +175,22 @@ def quit_app():
     except Exception as e:
         logger.error(f'ERROR: {e}')
         sys.exit(1)
+
+
+def create_dmg():
+    logger.info('Creating DMG...')
+    app_bundle = os.path.join(PKG_DIR, f'{APP_NAME}.app')
+    if not os.path.exists(app_bundle):
+        logger.error(f'Application bundle not found at {app_bundle}')
+        sys.exit(1)
+
+    dmg_path = os.path.join(PKG_DIR, DMG_NAME)
+    if os.path.exists(dmg_path):
+        os.remove(dmg_path)
+
+    subprocess.check_call(['hdiutil', 'create', '-volname', APP_NAME, '-srcfolder', app_bundle, '-ov', '-format', 'UDZO', dmg_path])
+
+    logger.info(f'DMG created at {dmg_path}')
 
 
 def build(python_executable=None):
@@ -210,8 +231,10 @@ def build(python_executable=None):
     if os.path.exists(BUILD_DIR):
         shutil.rmtree(BUILD_DIR)
 
-    logger.info('Cleanup complete')
-    logger.info(f'Package created: {os.path.join(PKG_DIR, f"{APP_NAME}.app")}')
+    if args.dmg:
+        create_dmg()
+    else:
+        logger.info(f'Package created: {os.path.join(PKG_DIR, f"{APP_NAME}.app")}')
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ __pycache__/
 *$py.class
 
 # Icon build directory
-tilt_monitor/resources/tilt.iconset/
+tilt_monitor/assets/tilt.iconset/
 *.icns
 
 # Logs

@@ -153,7 +153,13 @@ def quit_app():
                 logger.info('Quitting application...')
                 quit_script = f'tell application "{APP_NAME}" to quit'
                 subprocess.check_call(['osascript', '-e', quit_script])
-                time.sleep(2)  # Give the app time to quit.
+                for _ in range(10):
+                    if subprocess.run(['pgrep', '-x', APP_NAME], capture_output=True).returncode != 0:
+                        logger.info(f'{APP_NAME} has quit.')
+                        break
+                    time.sleep(0.5)
+                else:
+                    logger.warning(f'{APP_NAME} did not quit after 5 seconds. Build may fail.')
             else:
                 logger.info('Build cancelled')
                 sys.exit(0)

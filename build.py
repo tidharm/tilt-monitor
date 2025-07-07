@@ -239,7 +239,10 @@ def build(python_executable=None):
 
 if __name__ == '__main__':
     try:
-        python_exe = setup_environment()
+        if not os.environ.get('CI'):
+            python_exe = setup_environment()
+        else:
+            python_exe = sys.executable
         build(python_exe)
     except KeyboardInterrupt:
         pass

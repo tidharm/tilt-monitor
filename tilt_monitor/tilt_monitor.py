@@ -46,7 +46,7 @@ config_dir = os.path.join(HOME, 'Library', 'Application Support', f'{int_app_nam
 os.chdir(main_dir)
 
 # Paths - Directories
-resources_dir = os.path.join(main_dir, 'resources')
+assets_dir = os.path.join(main_dir, 'assets')
 log_dir = os.path.join(HOME, 'Library', 'Logs', int_app_name)
 
 os.makedirs(config_dir, exist_ok=True)
@@ -58,10 +58,10 @@ log_file = os.path.join(log_dir, f'{script_name}.log')
 tmp_file_pfx = '/tmp/tilt_monitor_'
 
 # Resources
-gray_icon = os.path.join(resources_dir, 'gray.png')
-green_icon = os.path.join(resources_dir, 'green.png')
-red_icon = os.path.join(resources_dir, 'red.png')
-transparent_icon = os.path.join(resources_dir, 'transparent.png')
+gray_icon = os.path.join(assets_dir, 'gray.png')
+green_icon = os.path.join(assets_dir, 'green.png')
+red_icon = os.path.join(assets_dir, 'red.png')
+transparent_icon = os.path.join(assets_dir, 'transparent.png')
 default_icon = gray_icon
 
 # Environment

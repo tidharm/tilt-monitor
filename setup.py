@@ -24,7 +24,7 @@ setup(
         'dev': [line.strip() for line in open('requirements-dev.txt').readlines()],
     },
     package_data={
-        'tilt_monitor': ['resources/*.png', 'resources/*.icns', 'tilt_monitor_config.json'],
+        'tilt_monitor': ['assets/*.png', 'assets/*.icns', 'tilt_monitor_config.json'],
     },
     entry_points={
         'console_scripts': [
@@ -33,10 +33,10 @@ setup(
         ],
     },
     app=['tilt_monitor/tilt_monitor.py'],
-    data_files=[('resources', glob('tilt_monitor/resources/*.png') + glob('tilt_monitor/resources/*.icns'))],
+    data_files=[('assets', glob('tilt_monitor/assets/*.png') + glob('tilt_monitor/assets/*.icns'))],
     options={
         'py2app': {
-            'iconfile': 'tilt_monitor/resources/tilt.icns',
+            'iconfile': 'tilt_monitor/assets/tilt.icns',
             'includes': ['rumps', 'pyobjc_framework_Cocoa', 'imp'],
             'plist': {
                 'CFBundleIdentifier': 'com.tilt.monitor',

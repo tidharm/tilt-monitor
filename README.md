@@ -25,6 +25,13 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 
 <img src="resources/readme/dmg-installation.png" alt="Disk Image Installation" height="250" style="vertical-align:middle;"><br/>
 
+> **NOTE:**  
+> The **Tilt Monitor** app is not signed by Apple.  
+> If macOS GateKeeper prevents you from launching the app, you'll need to allow it either manually via **System Settings >> Privacy & Security**, or, by removing the quarantine attribute via command line:  
+> ```shell
+> xattr -dr com.apple.quarantine "/Applications/Tilt Monitor.app"
+> ```
+
 ### Build from Sources
 
 1. Clone the repository:

@@ -37,6 +37,8 @@ jobs:
     - name: Build and package
       id: build_package
       run: python build.py --dmg
+      env:
+        PYTHON_CONFIGURE_OPTS: --with-codesign-identity="-"
 
     - name: Release
       id: release

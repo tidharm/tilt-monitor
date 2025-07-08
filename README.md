@@ -3,7 +3,7 @@
 
 # Tilt Monitor
 
-<img src="tilt_monitor/resources/readme/menubar-main.png" alt="Tilt Monitor" height="30" style="vertical-align:middle;"><br/>
+<img src="resources/readme/menubar-main.png" alt="Tilt Monitor" height="30" style="vertical-align:middle;"><br/>
 
 Tilt Monitor is a macOS menu bar application that provides real-time status monitoring for [Tilt](https://tilt.dev/).  
 
@@ -35,16 +35,16 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 
 1. Start the application by launching it from Finder or Spotlight:  
 
-    <img src="tilt_monitor/resources/readme/app-finder.png" alt="Finder" height="100" style="vertical-align:middle;">
-    <img src="tilt_monitor/resources/readme/app-spotlight.png" alt="Spotlight" height="100" style="vertical-align:middle;">
+    <img src="resources/readme/app-finder.png" alt="Finder" height="100" style="vertical-align:middle;">
+    <img src="resources/readme/app-spotlight.png" alt="Spotlight" height="100" style="vertical-align:middle;">
     <br/>
 
     **First time only:**  
     Click on **Edit Configuration** to specify the path to the main Tiltfile ([config](#configuration) param `tilt_base_url`).  
     Make sure to click **Reload** after modifying the configuration file.  
 
-    <img src="tilt_monitor/resources/readme/menubar-config.png" alt="Edit Configuration" height="120" style="vertical-align:middle;">
-    <img src="tilt_monitor/resources/readme/menubar-config-reload.png" alt="Reload Configuration" height="120" style="vertical-align:middle;">
+    <img src="resources/readme/menubar-config.png" alt="Edit Configuration" height="120" style="vertical-align:middle;">
+    <img src="resources/readme/menubar-config-reload.png" alt="Reload Configuration" height="120" style="vertical-align:middle;">
     <br/>
     
     > If the **Tilt Up** menu option remains grayed out after reload, it means the specified path is incorrect/invalid.  

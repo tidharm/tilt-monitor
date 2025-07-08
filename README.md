@@ -66,12 +66,12 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 
     The menu bar icon shows the current status of Tilt:
 
-    |                                                                                                    |                                        |
-    |----------------------------------------------------------------------------------------------------|----------------------------------------|
-    | <img alt="Transparent" src="resources/transparent.png" height="18" style="vertical-align:middle;"> | Tilt is not running                    |
-    | <img alt="Gray" src="resources/gray.png" height="18" style="vertical-align:middle;">               | Tilt is starting or in a pending state |    
-    | <img alt="Red" src="resources/red.png" height="18" style="vertical-align:middle;">                 | One or more resources have errors      |
-    | <img alt="Green" src="resources/green.png" height="18" style="vertical-align:middle;">             | All resources are healthy              |
+    |                                                                                                            |                                        |
+    |------------------------------------------------------------------------------------------------------------|----------------------------------------|
+    | <img alt="Transparent" src="resources/readme/transparent.png" height="18" style="vertical-align:middle;">  | Tilt is not running                    |
+    | <img alt="Gray" src="resources/readme/gray.png" height="18" style="vertical-align:middle;">                | Tilt is starting or in a pending state |    
+    | <img alt="Red" src="resources/readme/red.png" height="18" style="vertical-align:middle;">                  | One or more resources have errors      |
+    | <img alt="Green" src="resources/readme/green.png" height="18" style="vertical-align:middle;">              | All resources are healthy              |
     
 
 ### Menu Options:  

@@ -38,7 +38,7 @@ jobs:
 
     - name: Build and package
       id: build_package
-      run: python build.py --dmg
+      run: python build.py --dmg --include-dmg-license
 
     - name: Release
       id: release

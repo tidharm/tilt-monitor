@@ -27,8 +27,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
 parser.add_argument('--dmg', action='store_true', help='Create a distributable DMG file')
 parser.add_argument('--include-dmg-license', action='store_true', help='Include license agreement in DMG')
+parser.add_argument('--skip-env-setup', action='store_true', help='Skip virtual environment setup and dependency installation (for CI or existing local environment).')
 parser.add_argument('--skip-build', action='store_true', help='Create DMG from existing app bundle')
 args = parser.parse_args()
+
+create_dmg = args.dmg
+include_dmg_license = args.include_dmg_license
+skip_env_setup = args.skip_env_setup or os.environ.get('CI')
+skip_build = args.skip_build
+
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -279,7 +286,7 @@ def build_dmg():
         'icon_size': icon_size,
         'text_size': text_size,
     }
-    if args.include_dmg_license:
+    if include_dmg_license:
         settings['license'] = {
             'default-language': 'en_US',
             'licenses': {'en_US': 'resources/LICENSE.rtf'}
@@ -300,7 +307,7 @@ def build(python_executable=None):
 
     quit_app()
 
-    if not args.skip_build:
+    if not skip_build:
         if os.path.exists(PKG_DIR):
             shutil.rmtree(PKG_DIR)
         os.makedirs(PKG_DIR)
@@ -332,7 +339,7 @@ def build(python_executable=None):
         if os.path.exists(BUILD_DIR):
             shutil.rmtree(BUILD_DIR)
 
-    if args.dmg:
+    if create_dmg:
         build_dmg()
     else:
         logger.info(f'Package created: {os.path.join(PKG_DIR, f"{APP_NAME}.app")}')
@@ -340,10 +347,11 @@ def build(python_executable=None):
 
 if __name__ == '__main__':
     try:
-        if not os.environ.get('CI'):
-            python_exe = setup_environment()
-        else:
+        if skip_env_setup:
             python_exe = sys.executable
+        else:
+            python_exe = setup_environment()
+
         build(python_exe)
     except KeyboardInterrupt:
         pass

@@ -314,7 +314,7 @@ def build(python_executable=None):
 
         logger.info(f'Packaging {APP_NAME} using py2app (see log for details)')
         try:
-            logger.info(f"--> build.py is using Python executable: {os.path.abspath(python)}")
+            logger.info(f'Python executable: {os.path.abspath(python)}')
             subprocess.run(
                 [python, 'setup.py', 'py2app'],
                 stdout=file_handler.stream,

@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - '*.*.*'
 
 jobs:
   build:
@@ -14,43 +14,39 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python
+      id: setup_python
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: Update App Version
+      id: update_version
       run: |
-        VERSION=$(echo ${{ github.ref }} | sed -e 's|refs/tags/v||')
+        VERSION=$(echo ${{ github.ref }} | sed -e 's|refs/tags/||')
         sed -i '' "s/__version__ = .*/__version__ = '$VERSION'/" tilt_monitor/__init__.py
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Updated version to $VERSION"
 
     - name: Install dependencies
+      id: install_dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
 
     - name: Build and package
+      id: build_package
       run: python build.py --dmg
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      id: release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        files: ./package/Tilt-Monitor-${{ env.VERSION }}.dmg
+        tag_name: ${{ github.ref_name }}
+        name: v${{ env.VERSION }}
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./package/Tilt-Monitor-${{ github.ref_name }}.dmg
-        asset_name: Tilt-Monitor-${{ github.ref_name }}.dmg
-        asset_content_type: application/octet-stream

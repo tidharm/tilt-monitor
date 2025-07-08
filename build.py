@@ -33,7 +33,7 @@ args = parser.parse_args()
 
 create_dmg = args.dmg
 include_dmg_license = args.include_dmg_license
-skip_env_setup = args.skip_env_setup or os.environ.get('CI')
+skip_env_setup = args.skip_env_setup or os.environ.get('GITHUB_ACTIONS')
 skip_build = args.skip_build
 
 

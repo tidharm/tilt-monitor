@@ -17,6 +17,16 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 
 ## Installation
 
+### Disk Image Installation
+
+1. Download the [latest](https://github.com/tidharm/tilt-monitor/releases/latest) `Tilt-Monitor-x.x.x.dmg`  
+
+2. Open the downloaded disk image and drag the **Tilt Monitor** icon into your **Applications** folder.  
+
+<img src="resources/readme/dmg-installation.png" alt="Disk Image Installation" height="250" style="vertical-align:middle;"><br/>
+
+### Build from Sources
+
 1. Clone the repository:
    ```
    git clone https://github.com/tidharm/tilt-monitor.git
@@ -30,6 +40,8 @@ It replicates Tilt's favicon status colors, and allows you basic control over Ti
 
    When the build finishes, the packaged application will be available in the `package/Tilt Monitor.app` directory.  
    It is recommended to move it to the `/Applications` directory.
+
+<br/>
 
 ## Usage
 

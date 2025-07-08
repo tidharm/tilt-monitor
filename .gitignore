@@ -26,3 +26,4 @@ tilt_monitor/assets/tilt.iconset/
 *.log
 *.log.old
 .DS_Store
+tmp.*

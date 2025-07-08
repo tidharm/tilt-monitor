@@ -23,11 +23,11 @@ APP_NAME = __app_name__
 APP_VERSION = __version__
 DMG_NAME = f'{APP_NAME.replace(" ", "-")}-{APP_VERSION}.dmg'
 
-include_dmg_license = True
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
-parser.add_argument('--dmg', action='store_true', help='Create a distributable DMG file.')
+parser.add_argument('--dmg', action='store_true', help='Create a distributable DMG file')
+parser.add_argument('--include-dmg-license', action='store_true', help='Include license agreement in DMG')
+parser.add_argument('--skip-build', action='store_true', help='Create DMG from existing app bundle')
 args = parser.parse_args()
 
 # Configure logging
@@ -201,6 +201,39 @@ def unmount_existing_volumes():
         logger.warning(f'Could not unmount volume: {e}')
 
 
+def add_version_to_dmg_image(text_to_add, image_path, font_name='Arial', text_size=12, dest_pfx='tmp'):
+    logger.info(f'  Adding "{text_to_add}" to DMG background image...')
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+
+        ext = os.path.splitext(image_path)[1]
+        for image in [image_path, image_path.replace(ext, f'@2x{ext}')]:
+            scale = 2 if '@2x' in image else 1
+            font_size = text_size * scale
+
+            try:
+                font = ImageFont.truetype(font_name, font_size)
+            except IOError:
+                logger.warning(f'  {font_name} font not found, using default font.')
+                font = ImageFont.load_default(font_size)
+
+            image_name = os.path.basename(image)
+            new_path = image.replace(image_name, f'{dest_pfx}.{image_name}')
+            img = Image.open(image)
+            draw = ImageDraw.Draw(img)
+
+            text_box = draw.textbbox((0, 0), text_to_add, font=font)
+            text_x, text_y, text_w, text_h = text_box
+            position = (80 * scale, img.height - text_h - (15 * scale))  # Below the application icon
+
+            draw.text(position, text_to_add, font=font, align='center', fill=(0, 0, 0, 200))
+
+            img.save(new_path)
+            logger.info(f'    Image updated: "{new_path}"')
+    except Exception as e:
+        logger.error(f'  Failed to add text to image: {e}')
+
+
 def build_dmg():
     import dmgbuild
     unmount_existing_volumes()
@@ -211,9 +244,19 @@ def build_dmg():
         logger.error(f'  Application bundle not found at {app_bundle}')
         sys.exit(1)
 
-    dmg_path = os.path.join(PKG_DIR, DMG_NAME)  # ToDo - include version (and update version by workflow)
+    dmg_path = os.path.join(PKG_DIR, DMG_NAME)
     if os.path.exists(dmg_path):
         os.remove(dmg_path)
+
+    icon_size = 128
+    text_size = 12
+    background_image = 'resources/dmg_images/background.png'
+    version_name_pfx = 'tmp'
+    add_version_to_dmg_image(f'v{APP_VERSION}', background_image, font_name='Arial', text_size=text_size, dest_pfx=version_name_pfx)
+    versioned_background_image = background_image.replace('background', f'{version_name_pfx}.background')
+    if not os.path.exists(versioned_background_image):
+        logger.error(f'  Background image not found at {versioned_background_image}')
+        sys.exit(1)
 
     # https://dmgbuild.readthedocs.io/en/latest/settings.html
     settings = {
@@ -230,13 +273,13 @@ def build_dmg():
             f'{APP_NAME}.app': (100, 180),
             'Applications': (400, 180),
         },
-        'background': 'resources/dmg-background.png',
+        'background': versioned_background_image,
         'window_rect': ((100, 100), (500, 355)),
         'default_view': 'icon-view',
-        'icon_size': 128,
-        'text_size': 12,
+        'icon_size': icon_size,
+        'text_size': text_size,
     }
-    if include_dmg_license:
+    if args.include_dmg_license:
         settings['license'] = {
             'default-language': 'en_US',
             'licenses': {'en_US': 'resources/LICENSE.rtf'}
@@ -257,36 +300,37 @@ def build(python_executable=None):
 
     quit_app()
 
-    if os.path.exists(PKG_DIR):
-        shutil.rmtree(PKG_DIR)
-    os.makedirs(PKG_DIR)
+    if not args.skip_build:
+        if os.path.exists(PKG_DIR):
+            shutil.rmtree(PKG_DIR)
+        os.makedirs(PKG_DIR)
 
-    logger.info(f'Packaging {APP_NAME} using py2app (see log for details)')
-    try:
-        subprocess.run(
-            [python, 'setup.py', 'py2app'],
-            stdout=file_handler.stream,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True
-        )
-    except subprocess.CalledProcessError as e:
-        logger.error(f'py2app build failed: {e.stderr}')
-        sys.exit(1)
+        logger.info(f'Packaging {APP_NAME} using py2app (see log for details)')
+        try:
+            subprocess.run(
+                [python, 'setup.py', 'py2app'],
+                stdout=file_handler.stream,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            logger.error(f'py2app build failed: {e.stderr}')
+            sys.exit(1)
 
-    logger.info('Build successful')
+        logger.info('Build successful')
 
-    app_bundle = os.path.join(DIST_DIR, f'{APP_NAME}.app')
-    if os.path.exists(app_bundle):
-        shutil.move(app_bundle, PKG_DIR)
-    else:
-        logger.error(f'Could not find {app_bundle}')
-        sys.exit(1)
+        app_bundle = os.path.join(DIST_DIR, f'{APP_NAME}.app')
+        if os.path.exists(app_bundle):
+            shutil.move(app_bundle, PKG_DIR)
+        else:
+            logger.error(f'Could not find {app_bundle}')
+            sys.exit(1)
 
-    if os.path.exists(DIST_DIR):
-        shutil.rmtree(DIST_DIR)
-    if os.path.exists(BUILD_DIR):
-        shutil.rmtree(BUILD_DIR)
+        if os.path.exists(DIST_DIR):
+            shutil.rmtree(DIST_DIR)
+        if os.path.exists(BUILD_DIR):
+            shutil.rmtree(BUILD_DIR)
 
     if args.dmg:
         build_dmg()
@@ -304,5 +348,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     except Exception as build_err:
-        logger.error(f"A build step failed. Check 'build.log' for details.")
+        logger.error(f'A build step failed. Check "build.log" for details.')
         sys.exit(1)

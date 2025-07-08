@@ -1,25 +1,29 @@
 import argparse
-import glob
 import logging
 import os
 import shutil
 import subprocess
 import sys
 import time
+import traceback
 
-from tilt_monitor import __app_name__ as APP_NAME
+from tilt_monitor import __app_name__, __version__
 
 
-RESOURCE_DIR = 'tilt_monitor/resources'
+ASSETS_DIR = 'tilt_monitor/assets'
 ICON_SRC = 'green.png'
 ICON_SET_NAME = 'tilt.iconset'
 ICNS_NAME = 'tilt.icns'
-ICNS_PATH = os.path.join(RESOURCE_DIR, ICNS_NAME)
+ICNS_PATH = os.path.join(ASSETS_DIR, ICNS_NAME)
 PKG_DIR = 'package'
 DIST_DIR = 'dist'
 BUILD_DIR = 'build'
 VENV_DIR = '.venv'
-DMG_NAME = f'{APP_NAME}.dmg'
+APP_NAME = __app_name__
+APP_VERSION = __version__
+DMG_NAME = f'{APP_NAME.replace(" ", "-")}-{APP_VERSION}.dmg'
+
+include_dmg_license = True
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
@@ -53,6 +57,12 @@ file_handler.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
+def ex(e):
+    tb = e.__traceback__
+    l_frame = traceback.extract_tb(tb)[-1]
+    return f'{type(e).__name__}][{l_frame.name}:{l_frame.lineno}]({l_frame.filename})'
+
+
 def setup_environment():
     """
     Sets up a virtual environment and installs dependencies.
@@ -74,16 +84,17 @@ def setup_environment():
         subprocess.check_call([sys.executable, '-m', 'venv', venv_dir])
 
     python = os.path.join(venv_dir, 'bin', 'python')
-    
+
     logger.info('Installing dependencies...')
-    subprocess.check_output(
-        [python, '-m', 'pip', 'install', '-r', 'requirements.txt', '--upgrade']
-    )
+    subprocess.check_output([python, '-m', 'pip', 'install', '-r', 'requirements.txt', '--upgrade'])
     
     logger.info('Installing dev dependencies...')
-    subprocess.check_output(
-        [python, '-m', 'pip', 'install', '-r', 'requirements-dev.txt', '--upgrade']
-    )
+    subprocess.check_output([python, '-m', 'pip', 'install', '-r', 'requirements-dev.txt', '--upgrade'])
+
+    # Add the venv's package dir to path for current execution (required for scripts that bootstrap their own dependencies).
+    site_packages_path = subprocess.check_output([python, '-c', "import sysconfig; print(sysconfig.get_paths()['purelib'])"], text=True).strip()
+    if site_packages_path not in sys.path:
+        sys.path.insert(0, site_packages_path)
 
     return python
 
@@ -95,9 +106,9 @@ def create_icon():
         return
 
     logger.info('Creating icon...')
-    iconset_dir = os.path.join(RESOURCE_DIR, ICON_SET_NAME)
+    iconset_dir = os.path.join(ASSETS_DIR, ICON_SET_NAME)
     os.makedirs(iconset_dir, exist_ok=True)
-    source_image = os.path.join(RESOURCE_DIR, ICON_SRC)
+    source_image = os.path.join(ASSETS_DIR, ICON_SRC)
 
     try:
         # Create iconset
@@ -144,7 +155,7 @@ def quit_app():
 
             dialog_text = f'{APP_NAME} is running." & return & return & "Quit it to continue the build, or Cancel to abort.'
             dialog_icon = f'(POSIX file "{os.path.abspath(ICNS_PATH)}")' if os.path.exists(ICNS_PATH) else 'caution'
-            prompt_script = f'return button returned of (display dialog "{dialog_text}" buttons {{"Cancel", "Quit"}} default button "Quit" with icon {dialog_icon})'
+            prompt_script = f'return button returned of (display dialog "{dialog_text}" buttons {{\"Cancel\", \"Quit\"}} default button "Quit" with icon {dialog_icon})'
             prompt_result = subprocess.run(['osascript', '-e', prompt_script], capture_output=True, text=True)
 
             if prompt_result.returncode == 1 and "User canceled" in prompt_result.stderr:
@@ -177,20 +188,66 @@ def quit_app():
         sys.exit(1)
 
 
-def create_dmg():
-    logger.info('Creating DMG...')
+def unmount_existing_volumes():
+    """Unmount any existing {APP_NAME} volumes."""
+    try:
+        for volume in os.listdir('/Volumes'):
+            if volume.startswith(APP_NAME):
+                logger.info(f'Unmounting existing volume "{volume}"...')
+                subprocess.check_call(['hdiutil', 'detach', os.path.join('/Volumes', volume), '-quiet'])
+    except FileNotFoundError:
+        logger.warning(f'Could not list /Volumes to unmount existing images. Skipping')
+    except subprocess.CalledProcessError as e:
+        logger.warning(f'Could not unmount volume: {e}')
+
+
+def build_dmg():
+    import dmgbuild
+    unmount_existing_volumes()
+
+    logger.info(f'Creating {DMG_NAME}...')
     app_bundle = os.path.join(PKG_DIR, f'{APP_NAME}.app')
     if not os.path.exists(app_bundle):
-        logger.error(f'Application bundle not found at {app_bundle}')
+        logger.error(f'  Application bundle not found at {app_bundle}')
         sys.exit(1)
 
-    dmg_path = os.path.join(PKG_DIR, DMG_NAME)
+    dmg_path = os.path.join(PKG_DIR, DMG_NAME)  # ToDo - include version (and update version by workflow)
     if os.path.exists(dmg_path):
         os.remove(dmg_path)
 
-    subprocess.check_call(['hdiutil', 'create', '-volname', APP_NAME, '-srcfolder', app_bundle, '-ov', '-format', 'UDZO', dmg_path])
+    # https://dmgbuild.readthedocs.io/en/latest/settings.html
+    settings = {
+        'filename': dmg_path,
+        'volume_name': APP_NAME,
+        'format': 'UDZO',
+        'filesystem': 'HFS+',
+        'files': [
+            (app_bundle, f'{APP_NAME}.app'),
+        ],
+        'symlinks': {'Applications': '/Applications'},
+        'badge_icon': ICNS_PATH,
+        'icon_locations': {
+            f'{APP_NAME}.app': (100, 180),
+            'Applications': (400, 180),
+        },
+        'background': 'resources/dmg-background.png',
+        'window_rect': ((100, 100), (500, 355)),
+        'default_view': 'icon-view',
+        'icon_size': 128,
+        'text_size': 12,
+    }
+    if include_dmg_license:
+        settings['license'] = {
+            'default-language': 'en_US',
+            'licenses': {'en_US': 'resources/LICENSE.rtf'}
+        }
 
-    logger.info(f'DMG created at {dmg_path}')
+    try:
+        dmgbuild.build_dmg(dmg_path, APP_NAME, settings=settings)
+        logger.info(f'DMG created: {dmg_path}')
+    except Exception as e:
+        logger.error(f'Error creating DMG with dmgbuild:\n\t[{ex(e)}]{e}')
+        sys.exit(1)
 
 
 def build(python_executable=None):
@@ -232,7 +289,7 @@ def build(python_executable=None):
         shutil.rmtree(BUILD_DIR)
 
     if args.dmg:
-        create_dmg()
+        build_dmg()
     else:
         logger.info(f'Package created: {os.path.join(PKG_DIR, f"{APP_NAME}.app")}')
 

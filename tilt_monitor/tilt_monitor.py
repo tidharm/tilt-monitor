@@ -511,10 +511,12 @@ class TiltMonitorApp(rumps.App):
         clicked = rumps_alert(
             title=APP_NAME,
             message=about_msg,
-            ok='Close',
-            other='View on GitHub'
+            ok='Close',  # 1
+            other='View on GitHub',  # 0
+            # cancel = 'Cancel',  # -1
         )
-        if clicked < 0:
+        log(f'Button clicked: {clicked}')
+        if clicked == 0:
             log('Opening GitHub page')
             webbrowser.open(APP_URL)
 

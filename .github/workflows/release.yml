@@ -24,7 +24,7 @@ jobs:
     - name: Update App Version
       id: update_version
       run: |
-        VERSION=$(echo ${{ github.ref }} | sed -e 's|refs/tags/||')
+        VERSION=${{ github.ref_name }}
         sed -i '' "s/__version__ = .*/__version__ = '$VERSION'/" tilt_monitor/__init__.py
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Updated version to $VERSION"
@@ -48,6 +48,7 @@ jobs:
         files: ./package/Tilt-Monitor-${{ env.VERSION }}.dmg
         tag_name: ${{ github.ref_name }}
         name: v${{ env.VERSION }}
+        body_path: release_notes.md
         draft: false
         prerelease: false
       env:

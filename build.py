@@ -1,13 +1,14 @@
 import argparse
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
 import time
 import traceback
 
-from tilt_monitor import __app_name__, __version__
+from tilt_monitor import __app_name__, __version__, __app_url__
 
 
 ASSETS_DIR = 'tilt_monitor/assets'
@@ -21,7 +22,11 @@ BUILD_DIR = 'build'
 VENV_DIR = '.venv'
 APP_NAME = __app_name__
 APP_VERSION = __version__
+APP_URL = __app_url__
+APP_REPO = APP_URL.removeprefix('https://github.com/')
 DMG_NAME = f'{APP_NAME.replace(" ", "-")}-{APP_VERSION}.dmg'
+
+is_gh_workflow = os.environ.get('GITHUB_ACTIONS') == 'true'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
@@ -33,7 +38,7 @@ args = parser.parse_args()
 
 create_dmg = args.dmg
 include_dmg_license = args.include_dmg_license
-skip_env_setup = args.skip_env_setup or os.environ.get('GITHUB_ACTIONS')
+skip_env_setup = args.skip_env_setup or is_gh_workflow
 skip_build = args.skip_build
 
 
@@ -346,6 +351,62 @@ def build(python_executable=None):
         logger.info(f'Package created: {os.path.join(PKG_DIR, f"{APP_NAME}.app")}')
 
 
+def prepare_release_notes():
+    """
+    Prepare release notes for GitHub release.
+
+    This function is intended to be run only when build.py is executed by a GitHub Workflow.
+
+    It parses CHANGELOG.md to extract release notes for a specific version,
+    rewrites relative image paths to absolute URLs for GitHub releases,
+    and saves the output to a file, to be posted by the GitHub Releases API.
+    """
+    logger.info('Preparing release notes...')
+
+    changelog_file = 'CHANGELOG.md'
+    rn_file = 'tmp.release_notes.md'
+    gh_tag = APP_VERSION
+    repo = os.environ.get('GITHUB_REPOSITORY', APP_REPO)
+    ref = os.environ.get('GITHUB_REF_NAME', gh_tag)
+    gh_base_image_url = f'https://raw.githubusercontent.com/{repo}/{ref}/'
+    img_pattern = re.compile(r'(<img\s[^>]*?src=)(["\'])(?!https?://)([^"\']+)\2([^>]*?>)')  # relative image paths to absolute GH raw paths
+
+    def gh_log(fmt, title, message):
+        """
+        Formats and prints a GitHub Actions log message.
+        :param fmt: One of ``error``, ``warning``, ``debug``
+        """
+        file = sys.stderr if fmt == 'error' else sys.stdout
+        print(f'::{fmt} title={title}::{message}', file=file)
+
+    def replace_img_path(m):
+        return f"{m.group(1)}{m.group(2)}{gh_base_image_url}{m.group(3)}{m.group(2)}{m.group(4)}"
+
+    if os.path.exists(rn_file):
+        os.remove(rn_file)
+
+    with open(changelog_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    # Find the content between the version's <h1> tag and the next <hr/> tag
+    pattern = re.compile(f'<h1 tag="{gh_tag}".*?</h1>(.*?)(?=<hr/>)', re.DOTALL | re.IGNORECASE)
+    match = pattern.search(content)
+    if not match:
+        gh_log('warning', 'Content Not Found', f'Release notes for version {gh_tag} not found in {changelog_file}')
+        return
+
+    rn_content = match.group(1).strip()
+    release_notes = img_pattern.sub(replace_img_path, rn_content)
+
+    try:
+        with open(rn_file, 'w', encoding='utf-8') as f:
+            f.write(release_notes)
+        gh_log('notice', 'File Created', f'Release notes file created: {rn_file}')
+    except IOError as e:
+        gh_log('error', 'File Write Error', f'Failed to write to {rn_file}: {e}')
+        sys.exit(1)
+
+
 if __name__ == '__main__':
     try:
         if skip_env_setup:
@@ -354,6 +415,9 @@ if __name__ == '__main__':
             python_exe = setup_environment()
 
         build(python_exe)
+
+        if is_gh_workflow:
+            prepare_release_notes()
     except KeyboardInterrupt:
         pass
     except Exception as build_err:

@@ -402,6 +402,11 @@ def prepare_release_notes():
         with open(rn_file, 'w', encoding='utf-8') as f:
             f.write(release_notes)
         gh_log('notice', 'File Created', f'Release notes file created: {rn_file}')
+
+        if github_output := os.environ.get('GITHUB_OUTPUT'):
+            with open(github_output, 'a') as f:
+                f.write(f'release_notes_file={rn_file}\\n')
+            gh_log('notice', 'Output Set', f'Set step output release_notes_file={rn_file}')
     except IOError as e:
         gh_log('error', 'File Write Error', f'Failed to write to {rn_file}: {e}')
         sys.exit(1)

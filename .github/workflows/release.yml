@@ -48,7 +48,7 @@ jobs:
         files: ./package/Tilt-Monitor-${{ env.VERSION }}.dmg
         tag_name: ${{ github.ref_name }}
         name: v${{ env.VERSION }}
-        body_path: release_notes.md
+        body_path: ${{ steps.build_package.outputs.release_notes_file }}
         draft: false
         prerelease: false
       env:

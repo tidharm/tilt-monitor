@@ -405,7 +405,7 @@ def prepare_release_notes():
 
         if github_output := os.environ.get('GITHUB_OUTPUT'):
             with open(github_output, 'a') as f:
-                f.write(f'release_notes_file={rn_file}\\n')
+                f.write(f'release_notes_file={rn_file}\n')
             gh_log('notice', 'Output Set', f'Set step output release_notes_file={rn_file}')
     except IOError as e:
         gh_log('error', 'File Write Error', f'Failed to write to {rn_file}: {e}')
